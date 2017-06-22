@@ -291,6 +291,9 @@ class DataMixin(object):
         dy = self.dIq
         y = Iq + np.random.randn(*dy.shape) * dy
         self.Iq = y
+        #Fix the assignment to None problem, for now
+        self._data.y=np.empty_like(self._data.x)
+        self._data.dy=np.empty_like(self._data.x)
         if self.data_type in ('Iq', 'Iq-oriented'):
             self._data.dy[self.index] = dy
             self._data.y[self.index] = y
@@ -355,7 +358,7 @@ class DirectModel(DataMixin):
     def simulate_data(self, noise=None, **pars):
         # type: (Optional[float], **float) -> None
         """
-        Generate simulated data for the model.
+        Generate simulated data for the model. Note that noise is a percentage from 0 to 100.
         """
         Iq = self.__call__(**pars)
         self._set_data(Iq, noise=noise)
