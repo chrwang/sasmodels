@@ -39,6 +39,8 @@ both radial and tangential simultaneously, use the word "both".
 
 Notes
 -----
+This is a fork of the original Sasmodels for use in implementing neural net
+related features. 
 
 cylinder.c + cylinder.py is the cylinder model with renamed variables and
 sld scaled by 1e6 so the numbers are nicer.  The model name is "cylinder"
