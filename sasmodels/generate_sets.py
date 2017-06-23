@@ -9,11 +9,14 @@ directory. See example_data.dat for a sample of the file format used.
 """
 from __future__ import print_function
 
+from collections import OrderedDict
+
 import numpy as np  # type: ignore
 import resource
 import sys
 import time
 import traceback
+import json
 
 from . import core
 from .compare import (randomize_pars, suppress_pd, make_data,
@@ -33,6 +36,9 @@ PRECISION = {
     'quad!': 5e-18,
     'sasview': 5e-14,
 }
+
+#Names for columns of data gotten from simulate
+DATA_NAMES = ["Q", "dQ", "I(Q)", "dI(Q)"]
 
 
 # noinspection PyTypeChecker
@@ -108,13 +114,20 @@ def gen_data(name, data, index, N=1, mono=True, cutoff=1e-5,
 
         dat = np.vstack(exec_model(calc_base, pars_i))
         columns = [v for _, v in sorted(pars_i.items())]
-        with open('out/result_' + name + "_" + str(k), 'w') as fd:
-                fd.write("Model %s %s\n" % (name, k))
-                columns2 = ['Seed'] + list(sorted(pars_i.keys()))
-                fd.write(','.join('"%s"' % c for c in columns2)+"\n")
-                fd.write(("%d," % seed) + ','.join("%s" % v for v in columns)+"\n")
-                fd.write("Q, dQ, I(Q), dI(Q)")
-                np.savetxt(fd, dat)
+        result_dict = OrderedDict()
+        with open('out/result_' + name + "_" + str(k) + ".json", 'w') as fd:
+            result_dict["model"] = name
+            result_dict["id"] = k
+            columns2 = ['Seed'] + list(sorted(pars_i.keys()))
+            params = OrderedDict()
+            for key, val in zip(columns2, np.insert(columns, 0, seed)):
+                params[key] = val
+            result_dict["param"] = params
+            data_dict = OrderedDict()
+            for n2, col in zip(DATA_NAMES, dat.T):
+                data_dict[n2] = col.tolist()
+            result_dict["data"] = data_dict
+            json.dump(result_dict, sort_keys=False, indent=4, separators=(',', ': '), fp=fd)
 
     print("Complete")
 
