@@ -37,7 +37,7 @@ PRECISION = {
     'sasview': 5e-14,
 }
 
-#Names for columns of data gotten from simulate
+# Names for columns of data gotten from simulate
 DATA_NAMES = ["Q", "dQ", "I(Q)", "dI(Q)"]
 
 
@@ -86,7 +86,8 @@ def gen_data(name, data, index, N=1, mono=True, cutoff=1e-5,
         """
         try:
             fn.simulate_data(noise=5, **pars)
-            result = np.vstack((fn._data.x, fn._data.dx, fn._data.y, fn._data.dy))
+            result = np.vstack((fn._data.x, fn._data.dx, fn._data.y,
+                                fn._data.dy))
         except Exception:
             traceback.print_exc()
             print("when comparing %s for %d" % (name, seed))
@@ -115,19 +116,22 @@ def gen_data(name, data, index, N=1, mono=True, cutoff=1e-5,
         dat = np.vstack(exec_model(calc_base, pars_i))
         columns = [v for _, v in sorted(pars_i.items())]
         result_dict = OrderedDict()
-        with open('out/result_' + name + "_" + str(k) + ".json", 'w') as fd:
-            result_dict["model"] = name
-            result_dict["id"] = k
-            columns2 = ['Seed'] + list(sorted(pars_i.keys()))
-            params = OrderedDict()
-            for key, val in zip(columns2, np.insert(columns, 0, seed)):
-                params[key] = val
-            result_dict["param"] = params
-            data_dict = OrderedDict()
-            for n2, col in zip(DATA_NAMES, dat.T):
-                data_dict[n2] = col.tolist()
-            result_dict["data"] = data_dict
-            json.dump(result_dict, sort_keys=False, indent=4, separators=(',', ': '), fp=fd)
+        result_dict["model"] = name
+        result_dict["id"] = k
+        columns2 = ['Seed'] + list(sorted(pars_i.keys()))
+        params = OrderedDict(zip(columns2, np.insert(columns, 0, seed)))
+        result_dict["param"] = params
+        data_dict = OrderedDict(
+            (n2, col.tolist()) for n2, col in zip(DATA_NAMES, dat.T))
+        result_dict["data"] = data_dict
+
+        with open('out/result_' + name + "_" + str(k).zfill(len(str(N))) +
+                  ".json", 'w') as fd:
+            # result_dict is constructed as an OrderedDict for reproducibility.
+            # The original insert order matters, so sort_keys (which sorts alphabetically)
+            # must be false.
+            json.dump(result_dict, sort_keys=False, indent=4,
+                      separators=(',', ': '), fp=fd)
 
     print("Complete")
 
@@ -136,8 +140,8 @@ def print_usage():
     """
     Print the command usage string.
     """
-    print("usage: generate_sets.py MODEL COUNT (1dNQ|2dNQ) (CUTOFF|mono) (single|double|quad)",
-          file=sys.stderr)
+    print("usage: generate_sets.py MODEL COUNT (1dNQ|2dNQ) (CUTOFF|mono) "
+          "(single|double|quad)", file=sys.stderr)
 
 
 def print_models():
@@ -176,7 +180,7 @@ is set in compare.py defaults for each model.  Polydispersity is given in the
 
 PRECISION is the floating point precision to use for comparisons. Precision is 
 one of fast, single, double for GPU or single!, double!, quad! for DLL.  If no
-precision is given, then the program defaults to single and double! respectively.
+precision is given, then this defaults to single and double! respectively.
 
 Available models:
 """)
@@ -195,15 +199,17 @@ def main(argv):
     try:
         model_list = [target] if target in MODELS else core.list_models(target)
     except ValueError:
-        print('Bad model %s.  Use model type or one of:' % target, file=sys.stderr)
+        print('Bad model %s.  Use model type or one of:' % target,
+              file=sys.stderr)
         print_models()
-        print('model types: all, py, c, double, single, opencl, 1d, 2d, nonmagnetic, magnetic')
+        print(
+            'model types: all, py, c, double, single, opencl, 1d, 2d, nonmagnetic, magnetic')
         return
     try:
         count = int(argv[1])
         is2D = argv[2].startswith('2d')
         assert argv[2][1] == 'd'
-        Nq = int(argv[2][2:])
+        nq = int(argv[2][2:])
         mono = len(argv) <= 3 or argv[3] == 'mono'
         cutoff = float(argv[3]) if not mono else 0
         base = argv[4] if len(argv) > 4 else "single"
@@ -212,7 +218,7 @@ def main(argv):
         print_usage()
         return
 
-    data, index = make_data({'qmax': 1.0, 'is2d': is2D, 'nq': Nq, 'res': 0.05,
+    data, index = make_data({'qmax': 1.0, 'is2d': is2D, 'nq': nq, 'res': 0.05,
                              'accuracy': 'Low', 'view': 'log', 'zero': False})
 
     for model in model_list:
@@ -227,4 +233,6 @@ if __name__ == "__main__":
     main(sys.argv[1:])
     time_end = time.clock() - time_start
     print('Total computation time (s): %.2f' % time_end)
-    print('Total memory usage: %.2f' % (resource.getrusage(resource.RUSAGE_SELF).ru_maxrss))  # Units are OS dependent
+    print('Total memory usage: %.2f' %
+          resource.getrusage(resource.RUSAGE_SELF).ru_maxrss)
+    # Units are OS dependent
