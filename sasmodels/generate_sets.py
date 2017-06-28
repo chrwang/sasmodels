@@ -43,7 +43,7 @@ DATA_NAMES = ["Q", "dQ", "I(Q)", "dI(Q)"]
 
 # noinspection PyTypeChecker
 def gen_data(name, data, index, N=1, mono=True, cutoff=1e-5,
-             base='sasview'):
+             base='sasview', output_dir='out/'):
     """
     Generates the data for the given model and parameters.
 
@@ -104,6 +104,10 @@ def gen_data(name, data, index, N=1, mono=True, cutoff=1e-5,
         print('"good","%d of %d","max diff",%g' % (0, N, np.NaN))
         return
 
+    first = True
+    q = list()
+    iq = list()
+    mname = list()
     for k in range(N):
         seed = np.random.randint(int(1e6))
         pars_i = randomize_pars(model_info, pars, seed)
@@ -125,13 +129,25 @@ def gen_data(name, data, index, N=1, mono=True, cutoff=1e-5,
             (n2, col.tolist()) for n2, col in zip(DATA_NAMES, dat.T))
         result_dict["data"] = data_dict
 
-        with open('out/result_' + name + "_" + str(k).zfill(len(str(N))) +
-                  ".json", 'w') as fd:
+        iq.append(dat.T[2].tolist())
+        if first:
+            mname.append(name)
+            mname.append(N)
+            q = dat.T[0].tolist()
+            first = False
+        # with open(output_dir + 'result_' + name + "_" + str(k).zfill(len(str(N))) +
+        #          ".json", 'w') as fd:
+
             # result_dict is constructed as an OrderedDict for reproducibility.
             # The original insert order matters, so sort_keys (which sorts alphabetically)
             # must be false.
-            json.dump(result_dict, sort_keys=False, indent=4,
-                      separators=(',', ': '), fp=fd)
+            #json.dump(result_dict, sort_keys=False, indent=4,
+                      #separators=(',', ': '), fp=fd)
+    with open(output_dir + 'result_all_' + name, 'w') as fd:
+        fd.write(str(mname) + '\n')
+        fd.write(str(q) + '\n')
+        fd.write(str(iq))
+
 
     print("Complete")
 
