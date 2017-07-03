@@ -14,6 +14,7 @@ from collections import OrderedDict
 import numpy as np  # type: ignore
 import resource
 import sys
+import os
 import time
 import traceback
 import json
@@ -143,6 +144,8 @@ def gen_data(name, data, index, N=1, mono=True, cutoff=1e-5,
             # must be false.
             #json.dump(result_dict, sort_keys=False, indent=4,
                       #separators=(',', ': '), fp=fd)
+    if not os.path.exists(os.path.dirname(output_dir)):
+        os.makedirs(os.path.dirname(output_dir))
     with open(output_dir + 'result_all_' + name, 'w') as fd:
         fd.write(str(mname) + '\n')
         fd.write(str(q) + '\n')
@@ -210,12 +213,13 @@ def main(argv):
     if len(argv) not in (3, 4, 5):
         print_help()
         return
+    run_model(argv[0], argv)
 
-    target = argv[0]
+def run_model(model, argv):
     try:
-        model_list = [target] if target in MODELS else core.list_models(target)
+        model_list = [model] if model in MODELS else core.list_models(model)
     except ValueError:
-        print('Bad model %s.  Use model type or one of:' % target,
+        print('Bad model %s.  Use model type or one of:' % model,
               file=sys.stderr)
         print_models()
         print(
@@ -233,14 +237,11 @@ def main(argv):
         traceback.print_exc()
         print_usage()
         return
-
     data, index = make_data({'qmax': 1.0, 'is2d': is2D, 'nq': nq, 'res': 0.05,
                              'accuracy': 'Low', 'view': 'log', 'zero': False})
-
     for model in model_list:
         gen_data(model, data, index, N=count, mono=mono,
                  cutoff=cutoff, base=base)
-
 
 if __name__ == "__main__":
     # from .compare import push_seed
