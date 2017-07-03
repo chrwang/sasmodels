@@ -85,7 +85,7 @@ def gen_data(name, data, index, N=1, mono=True, cutoff=1e-5,
         print it and return NaN of the right shape.
         """
         try:
-            fn.simulate_data(noise=5, **pars)
+            fn.simulate_data(noise=2, **pars)
             result = np.vstack((fn._data.x, fn._data.dx, fn._data.y,
                                 fn._data.dy))
         except Exception:
@@ -116,7 +116,8 @@ def gen_data(name, data, index, N=1, mono=True, cutoff=1e-5,
             constrain_new_to_old(model_info, pars_i)
         if mono:
             pars_i = suppress_pd(pars_i)
-
+#
+        pars_i.update({'scale':1, 'background': 1e-5})
         dat = np.vstack(exec_model(calc_base, pars_i))
         columns = [v for _, v in sorted(pars_i.items())]
         result_dict = OrderedDict()
@@ -234,7 +235,7 @@ def main(argv):
         print_usage()
         return
 
-    data, index = make_data({'qmax': 1.0, 'is2d': is2D, 'nq': nq, 'res': 0.05,
+    data, index = make_data({'qmax': 1.0, 'is2d': is2D, 'nq': nq, 'res': 0.03,
                              'accuracy': 'Low', 'view': 'log', 'zero': False})
 
     for model in model_list:
@@ -248,7 +249,7 @@ if __name__ == "__main__":
     time_start = time.clock()
     main(sys.argv[1:])
     time_end = time.clock() - time_start
-    print('Total computation time (s): %.2f' % time_end)
+    print('Total computation time (s): %.2f' % (time_end/10))
     print('Total memory usage: %.2f' %
           resource.getrusage(resource.RUSAGE_SELF).ru_maxrss)
     # Units are OS dependent
