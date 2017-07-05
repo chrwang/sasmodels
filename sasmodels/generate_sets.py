@@ -9,15 +9,14 @@ directory. See example_data.dat for a sample of the file format used.
 """
 from __future__ import print_function
 
+import os
+import resource
+import sys
+import time
+import traceback
 from collections import OrderedDict
 
 import numpy as np  # type: ignore
-import resource
-import sys
-import os
-import time
-import traceback
-import json
 
 from . import core
 from .compare import (randomize_pars, suppress_pd, make_data,
@@ -117,8 +116,7 @@ def gen_data(name, data, index, N=1, mono=True, cutoff=1e-5,
             constrain_new_to_old(model_info, pars_i)
         if mono:
             pars_i = suppress_pd(pars_i)
-#
-        pars_i.update({'scale':1, 'background': 1e-5})
+        pars_i.update({'scale': 1, 'background': 1e-5})
         dat = np.vstack(exec_model(calc_base, pars_i))
         columns = [v for _, v in sorted(pars_i.items())]
         result_dict = OrderedDict()
@@ -137,22 +135,12 @@ def gen_data(name, data, index, N=1, mono=True, cutoff=1e-5,
             mname.append(N)
             q = dat.T[0].tolist()
             first = False
-        # with open(output_dir + 'result_' + name + "_" + str(k).zfill(len(str(N))) +
-        #          ".json", 'w') as fd:
-
-            # result_dict is constructed as an OrderedDict for reproducibility.
-            # The original insert order matters, so sort_keys (which sorts alphabetically)
-            # must be false.
-            #json.dump(result_dict, sort_keys=False, indent=4,
-                      #separators=(',', ': '), fp=fd)
     if not os.path.exists(os.path.dirname(output_dir)):
         os.makedirs(os.path.dirname(output_dir))
-    with open(output_dir + 'result_all_' + name, 'w') as fd:
+    with open(output_dir + 'result_eval_' + name, 'w') as fd:
         fd.write(str(mname) + '\n')
         fd.write(str(q) + '\n')
         fd.write(str(iq))
-
-
     print("Complete")
 
 
@@ -216,6 +204,7 @@ def main(argv):
         return
     run_model(argv[0], argv)
 
+
 def run_model(model, argv):
     try:
         model_list = [model] if model in MODELS else core.list_models(model)
@@ -223,8 +212,8 @@ def run_model(model, argv):
         print('Bad model %s.  Use model type or one of:' % model,
               file=sys.stderr)
         print_models()
-        print(
-            'model types: all, py, c, double, single, opencl, 1d, 2d, nonmagnetic, magnetic')
+        print('model types: all, py, c, double, single, opencl, 1d, 2d, '
+              'nonmagnetic, magnetic')
         return
     try:
         count = int(argv[1])
@@ -244,13 +233,14 @@ def run_model(model, argv):
         gen_data(model, data, index, N=count, mono=mono,
                  cutoff=cutoff, base=base)
 
+
 if __name__ == "__main__":
     # from .compare import push_seed
     # with push_seed(1): main(sys.argv[1:])
     time_start = time.clock()
     main(sys.argv[1:])
     time_end = time.clock() - time_start
-    print('Total computation time (s): %.2f' % (time_end/10))
+    print('Total computation time (s): %.2f' % (time_end / 10))
     print('Total memory usage: %.2f' %
           resource.getrusage(resource.RUSAGE_SELF).ru_maxrss)
     # Units are OS dependent
