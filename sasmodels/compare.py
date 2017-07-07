@@ -34,6 +34,7 @@ import math
 import datetime
 import traceback
 import re
+import logging
 
 import numpy as np  # type: ignore
 
@@ -632,8 +633,10 @@ def make_engine(model_info, data, dtype, cutoff):
     if dtype == 'sasview':
         return eval_sasview(model_info, data)
     elif dtype.endswith('!'):
+	logging.info("creating ctypes")
         return eval_ctypes(model_info, data, dtype=dtype[:-1], cutoff=cutoff)
     else:
+	logging.info("creating dll")
         return eval_opencl(model_info, data, dtype=dtype, cutoff=cutoff)
 
 def _show_invalid(data, theory):

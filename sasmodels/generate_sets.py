@@ -25,6 +25,7 @@ from .compare import (randomize_pars, suppress_pd, make_data,
 
 MODELS = core.list_models()
 
+
 # Target 'good' value for various precision levels.
 PRECISION = {
     'fast': 1e-3,
@@ -43,7 +44,7 @@ DATA_NAMES = ["Q", "dQ", "I(Q)", "dI(Q)"]
 
 # noinspection PyTypeChecker
 def gen_data(name, data, index, N=1, mono=True, cutoff=1e-5,
-             base='sasview', output_dir='out/'):
+             base='sasview', output_dir='out3/'):
     """
     Generates the data for the given model and parameters.
 
@@ -202,7 +203,9 @@ def main(argv):
     if len(argv) not in (3, 4, 5):
         print_help()
         return
-    run_model(argv[0], argv)
+    #print(core.list_models("1d"))
+    for x in ['rpa', 'adsorbed_layer', 'be_polyelectrolyte', 'binary_hard_sphere', 'broad_peak', 'cylinder', 'core_multi_shell', 'core_shell_sphere', 'correlation_length', 'dab', 'flexible_cylinder', 'flexible_cylinder_elliptical', 'fractal', 'fractal_core_shell', 'fuzzy_sphere', 'gauss_lorentz_gel', 'gaussian_peak', 'gel_fit', 'guinier', 'guinier_porod', 'hardsphere', 'hayter_msa', 'hollow_rectangular_prism', 'hollow_rectangular_prism_thin_walls', 'lamellar', 'lamellar_hg', 'lamellar_hg_stack_caille', 'lamellar_stack_caille', 'lamellar_stack_paracrystal', 'line', 'linear_pearls', 'lorentz', 'mass_fractal', 'mass_surface_fractal', 'mono_gauss_coil', 'multilayer_vesicle', 'onion', 'peak_lorentz', 'pearl_necklace', 'poly_gauss_coil', 'polymer_excl_volume', 'polymer_micelle', 'porod', 'power_law', 'pringle', 'raspberry', 'rectangular_prism', 'rpa', 'sphere', 'spherical_sld', 'spinodal', 'squarewell', 'star_polymer', 'stickyhardsphere', 'surface_fractal', 'teubner_strey', 'two_lorentzian', 'two_power_law', 'unified_power_Rg', 'vesicle']:
+    	run_model(x, argv)
 
 
 def run_model(model, argv):
@@ -230,13 +233,20 @@ def run_model(model, argv):
     data, index = make_data({'qmax': 1.0, 'is2d': is2D, 'nq': nq, 'res': 0.03,
                              'accuracy': 'Low', 'view': 'log', 'zero': False})
     for model in model_list:
-        gen_data(model, data, index, N=count, mono=mono,
+        print("hello")
+	import logging
+	logging.info("h2")
+	gen_data(model, data, index, N=count, mono=mono,
                  cutoff=cutoff, base=base)
 
 
 if __name__ == "__main__":
     # from .compare import push_seed
     # with push_seed(1): main(sys.argv[1:])
+    #core.list_models("1d")
+    import logging
+    logging.basicConfig(level=logging.INFO)
+    logging.info("hello")
     time_start = time.clock()
     main(sys.argv[1:])
     time_end = time.clock() - time_start
