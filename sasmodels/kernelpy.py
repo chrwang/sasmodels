@@ -8,6 +8,8 @@ summing the results.  The interface to :class:`PyModel` matches those for
 """
 from __future__ import division, print_function
 
+import logging
+
 import numpy as np  # type: ignore
 from numpy import pi, sin, cos  #type: ignore
 
@@ -32,6 +34,7 @@ class PyModel(KernelModel):
         self.info = model_info
 
     def make_kernel(self, q_vectors):
+        logging.info("creating python kernel " + self.info.name)
         q_input = PyInput(q_vectors, dtype=F64)
         kernel = self.info.Iqxy if q_input.is_2d else self.info.Iq
         return PyKernel(kernel, self.info, q_input)

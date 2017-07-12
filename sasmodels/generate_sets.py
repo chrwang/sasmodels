@@ -25,26 +25,13 @@ from .compare import (randomize_pars, suppress_pd, make_data,
 
 MODELS = core.list_models()
 
-
-# Target 'good' value for various precision levels.
-PRECISION = {
-    'fast': 1e-3,
-    'half': 1e-3,
-    'single': 5e-5,
-    'double': 5e-14,
-    'single!': 5e-5,
-    'double!': 5e-14,
-    'quad!': 5e-18,
-    'sasview': 5e-14,
-}
-
 # Names for columns of data gotten from simulate
 DATA_NAMES = ["Q", "dQ", "I(Q)", "dI(Q)"]
 
 
 # noinspection PyTypeChecker
 def gen_data(name, data, index, N=1, mono=True, cutoff=1e-5,
-             base='sasview', output_dir='out3/'):
+             base='sasview', output_dir='out_all/'):
     """
     Generates the data for the given model and parameters.
 
@@ -138,7 +125,7 @@ def gen_data(name, data, index, N=1, mono=True, cutoff=1e-5,
             first = False
     if not os.path.exists(os.path.dirname(output_dir)):
         os.makedirs(os.path.dirname(output_dir))
-    with open(output_dir + 'result_eval_' + name, 'w') as fd:
+    with open(output_dir + 'result_test_' + name, 'w') as fd:
         fd.write(str(mname) + '\n')
         fd.write(str(q) + '\n')
         fd.write(str(iq))
@@ -203,9 +190,10 @@ def main(argv):
     if len(argv) not in (3, 4, 5):
         print_help()
         return
-    #print(core.list_models("1d"))
-    for x in ['rpa', 'adsorbed_layer', 'be_polyelectrolyte', 'binary_hard_sphere', 'broad_peak', 'cylinder', 'core_multi_shell', 'core_shell_sphere', 'correlation_length', 'dab', 'flexible_cylinder', 'flexible_cylinder_elliptical', 'fractal', 'fractal_core_shell', 'fuzzy_sphere', 'gauss_lorentz_gel', 'gaussian_peak', 'gel_fit', 'guinier', 'guinier_porod', 'hardsphere', 'hayter_msa', 'hollow_rectangular_prism', 'hollow_rectangular_prism_thin_walls', 'lamellar', 'lamellar_hg', 'lamellar_hg_stack_caille', 'lamellar_stack_caille', 'lamellar_stack_paracrystal', 'line', 'linear_pearls', 'lorentz', 'mass_fractal', 'mass_surface_fractal', 'mono_gauss_coil', 'multilayer_vesicle', 'onion', 'peak_lorentz', 'pearl_necklace', 'poly_gauss_coil', 'polymer_excl_volume', 'polymer_micelle', 'porod', 'power_law', 'pringle', 'raspberry', 'rectangular_prism', 'rpa', 'sphere', 'spherical_sld', 'spinodal', 'squarewell', 'star_polymer', 'stickyhardsphere', 'surface_fractal', 'teubner_strey', 'two_lorentzian', 'two_power_law', 'unified_power_Rg', 'vesicle']:
-    	run_model(x, argv)
+    print(len(core.list_models("all")))
+    for x in ['adsorbed_layer', 'barbell', 'bcc_paracrystal', 'be_polyelectrolyte', 'binary_hard_sphere', 'broad_peak', 'capped_cylinder', 'core_multi_shell', 'core_shell_bicelle', 'core_shell_bicelle_elliptical', 'core_shell_cylinder', 'core_shell_ellipsoid', 'core_shell_parallelepiped', 'core_shell_sphere', 'correlation_length', 'cylinder', 'dab', 'ellipsoid', 'elliptical_cylinder', 'fcc_paracrystal', 'flexible_cylinder', 'flexible_cylinder_elliptical', 'fractal', 'fractal_core_shell', 'fuzzy_sphere', 'gauss_lorentz_gel', 'gaussian_peak', 'gel_fit', 'guinier', 'guinier_porod', 'hardsphere', 'hayter_msa', 'hollow_cylinder', 'hollow_rectangular_prism', 'hollow_rectangular_prism_thin_walls', 'lamellar', 'lamellar_hg', 'lamellar_hg_stack_caille', 'lamellar_stack_caille', 'lamellar_stack_paracrystal', 'line', 'linear_pearls', 'lorentz', 'mass_fractal', 'mass_surface_fractal', 'mono_gauss_coil', 'multilayer_vesicle', 'onion', 'parallelepiped', 'peak_lorentz', 'pearl_necklace', 'poly_gauss_coil', 'polymer_excl_volume', 'polymer_micelle', 'porod', 'power_law', 'pringle', 'raspberry', 'rectangular_prism', 'rpa', 'sphere', 'spherical_sld', 'spinodal', 'squarewell', 'stacked_disks', 'star_polymer', 'stickyhardsphere', 'surface_fractal', 'teubner_strey', 'triaxial_ellipsoid', 'two_lorentzian', 'two_power_law', 'unified_power_Rg', 'vesicle']:
+    #for x in ['sphere', 'spherical_sld', 'spinodal', 'squarewell', 'stacked_disks', 'star_polymer', 'stickyhardsphere', 'surface_fractal', 'teubner_strey', 'triaxial_ellipsoid', 'two_lorentzian', 'two_power_law', 'unified_power_Rg', 'vesicle']:
+        run_model(x, argv)
 
 
 def run_model(model, argv):
@@ -233,20 +221,17 @@ def run_model(model, argv):
     data, index = make_data({'qmax': 1.0, 'is2d': is2D, 'nq': nq, 'res': 0.03,
                              'accuracy': 'Low', 'view': 'log', 'zero': False})
     for model in model_list:
-        print("hello")
-	import logging
-	logging.info("h2")
-	gen_data(model, data, index, N=count, mono=mono,
+        gen_data(model, data, index, N=count, mono=mono,
                  cutoff=cutoff, base=base)
 
 
 if __name__ == "__main__":
     # from .compare import push_seed
     # with push_seed(1): main(sys.argv[1:])
-    #core.list_models("1d")
+    # core.list_models("1d")
     import logging
+
     logging.basicConfig(level=logging.INFO)
-    logging.info("hello")
     time_start = time.clock()
     main(sys.argv[1:])
     time_end = time.clock() - time_start
